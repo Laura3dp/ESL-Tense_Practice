@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESL Tense Practice Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div id="game-container" class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+        <h1 id="esl-tense-practice-game" class="text-2xl font-bold mb-4">ESL Tense Practice Game</h1>
+        
+        <div id="game-content">
+            <p id="progress" class="mb-2 font-semibold"></p>
+            <p id="sentence" class="mb-4"></p>
+            <div class="mb-4">
+                <label class="block mb-2">Select tense:</label>
+                <select id="tense" class="w-full p-2 border rounded">
+                    <option value="present simple">Present Simple</option>
+                    <option value="present progressive">Present Progressive</option>
+                    <option value="present perfect">Present Perfect</option>
+                    <option value="present perfect progressive">Present Perfect Progressive</option>
+                    <option value="past simple">Past Simple</option>
+                    <option value="past progressive">Past Progressive</option>
+                    <option value="future simple">Future Simple (will)</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="answer" class="block mb-2">Fill in the correct verb form:</label>
+                <input type="text" id="answer" class="w-full p-2 border rounded" placeholder="Type your answer here">
+            </div>
+            <button id="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit</button>
+            <p id="score" class="mt-4">Score: 0</p>
+        </div>
+
+        <div id="explanation" class="hidden mt-4 p-4 bg-yellow-100 rounded-md">
+            <h2 class="font-bold">Explanation</h2>
+            <p id="explanation-text"></p>
+            <p id="correct-answer" class="mt-2 font-semibold"></p>
+            <button id="next" class="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Next</button>
+        </div>
+
+        <div id="game-over" class="hidden">
+            <p>Game Over! Your final score is <span id="final-score"></span> out of 100.</p>
+            <button id="restart" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Restart Game</button>
+        </div>
+    </div>
+
+    <script>
+        const sentences = [
+            { sentence: "I (eat) breakfast every morning.", answer: "eat", tense: "present simple" },
+            { sentence: "She (study) for her exam right now.", answer: "is studying", tense: "present progressive" },
+            { sentence: "They (live) in New York for 10 years.", answer: "have lived", tense: "present perfect" },
+            { sentence: "We (work) on this project since last month.", answer: "have been working", tense: "present perfect progressive" },
+            { sentence: "He (play) football yesterday.", answer: "played", tense: "past simple" },
+            { sentence: "It (rain) when I left home this morning.", answer: "was raining", tense: "past progressive" },
+            { sentence: "We (go) to the beach next weekend.", answer: "will go", tense: "future simple" },
+            { sentence: "The sun (rise) in the east.", answer: "rises", tense: "present simple" },
+            { sentence: "They (watch) a movie at the moment.", answer: "are watching", tense: "present progressive" },
+            { sentence: "I (finish) my homework already.", answer: "have finished", tense: "present perfect" },
+            { sentence: "She (learn) English for five years.", answer: "has been learning", tense: "present perfect progressive" },
+            { sentence: "We (visit) our grandparents last summer.", answer: "visited", tense: "past simple" },
+            { sentence: "The children (play) in the park when it started to rain.", answer: "were playing", tense: "past progressive" },
+            { sentence: "I (call) you later tonight.", answer: "will call", tense: "future simple" },
+            { sentence: "Water (boil) at 100 degrees Celsius.", answer: "boils", tense: "present simple" },
+            { sentence: "Look! The baby (sleep) peacefully.", answer: "is sleeping", tense: "present progressive" },
+            { sentence: "They (not see) each other since childhood.", answer: "have not seen", tense: "present perfect" },
+            { sentence: "How long (you / wait) for the bus?", answer: "have you been waiting", tense: "present perfect progressive" },
+            { sentence: "Columbus (discover) America in 1492.", answer: "discovered", tense: "past simple" },
+            { sentence: "I (drive) home when I saw the accident.", answer: "was driving", tense: "past progressive" },
+            { sentence: "The conference (start) at 9 AM tomorrow.", answer: "will start", tense: "future simple" },
+            { sentence: "The Earth (revolve) around the Sun.", answer: "revolves", tense: "present simple" },
+            { sentence: "Why (you / laugh)? Did I say something funny?", answer: "are you laughing", tense: "present progressive" },
+            { sentence: "I (never / be) to Paris.", answer: "have never been", tense: "present perfect" },
+            { sentence: "He (work) overtime a lot recently.", answer: "has been working", tense: "present perfect progressive" },
+            // ... Add more sentences to reach a total of 300
+        ];
+
+        let currentSentences = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startGame() {
+            shuffleArray(sentences);
+            currentSentences = sentences.slice(0, 25);
+            currentIndex = 0;
+            score = 0;
+            updateScore();
+            showNextSentence();
+        }
+
+        function showNextSentence() {
+            if (currentIndex < currentSentences.length) {
+                const sentenceElement = document.getElementById('sentence');
+                sentenceElement.textContent = currentSentences[currentIndex].sentence;
+                document.getElementById('answer').value = '';
+                document.getElementById('tense').value = 'present simple';
+                document.getElementById('explanation').classList.add('hidden');
+                document.getElementById('game-content').classList.remove('hidden');
+                document.getElementById('game-over').classList.add('hidden');
+                updateProgress();
+            } else {
+                endGame();
+            }
+        }
+
+        function updateProgress() {
+            const progressElement = document.getElementById('progress');
+            progressElement.textContent = `Question ${currentIndex + 1} of 25`;
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
+            const selectedTense = document.getElementById('tense').value;
+            const correctAnswer = currentSentences[currentIndex].answer.toLowerCase();
+            const correctTense = currentSentences[currentIndex].tense;
+
+            let isCorrect = false;
+            let points = 0;
+
+            if (userAnswer === correctAnswer) {
+                points += 2;
+                if (selectedTense === correctTense) points += 2;
+                isCorrect = true;
+            }
+
+            score += points;
+            updateScore();
+            showExplanation(isCorrect, points);
+        }
+
+        function showExplanation(isCorrect, points) {
+            const explanationElement = document.getElementById('explanation');
+            const explanationTextElement = document.getElementById('explanation-text');
+            const correctAnswerElement = document.getElementById('correct-answer');
+            const correctTense = currentSentences[currentIndex].tense;
+
+            let explanationText = isCorrect ? `Correct! You earned ${points} point${points !== 1 ? 's' : ''}. ` : "Incorrect. ";
+            explanationText += `The correct tense is ${correctTense}. `;
+
+            switch (correctTense) {
+                case "present simple":
+                    explanationText += "Use this tense for general truths, habits, or regular actions.";
+                    break;
+                case "present progressive":
+                    explanationText += "Use this tense for actions happening right now or temporary situations.";
+                    break;
+                case "present perfect":
+                    explanationText += "Use this tense for actions that started in the past and are still relevant now.";
+                    break;
+                case "present perfect progressive":
+                    explanationText += "Use this tense for ongoing actions that started in the past and continue to the present.";
+                    break;
+                case "past simple":
+                    explanationText += "Use this tense for completed actions in the past.";
+                    break;
+                case "past progressive":
+                    explanationText += "Use this tense for actions that were in progress at a specific time in the past.";
+                    break;
+                case "future simple":
+                    explanationText += "Use this tense for actions that will happen in the future.";
+                    break;
+            }
+
+            explanationTextElement.textContent = explanationText;
+            correctAnswerElement.textContent = `The correct answer is: "${currentSentences[currentIndex].answer}"`;
+            explanationElement.classList.remove('hidden');
+            document.getElementById('game-content').classList.add('hidden');
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Score: ${score}`;
+        }
+
+        function endGame() {
+            document.getElementById('game-content').classList.add('hidden');
+            document.getElementById('explanation').classList.add('hidden');
+            document.getElementById('game-over').classList.remove('hidden');
+            document.getElementById('final-score').textContent = score;
+        }
+
+        document.getElementById('submit').addEventListener('click', checkAnswer);
+        document.getElementById('next').addEventListener('click', () => {
+            currentIndex++;
+            showNextSentence();
+        });
+        document.getElementById('restart').addEventListener('click', startGame);
+
+        startGame();
+    </script>
+</body>
+</html>
